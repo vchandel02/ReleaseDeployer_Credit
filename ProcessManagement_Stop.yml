@@ -1,0 +1,32 @@
+---
+- name: CoreCARD Process Management (Stop)
+  hosts: "{{MachineGroupName}}"
+  become: yes
+  become_method: runas
+  become_user: System
+  gather_facts: no
+  
+  tasks:
+    
+    - name: Stop Process
+      win_shell: |
+        $Processes = Get-WmiObject -Class Win32_Process -Filter "name='{{item}}'"
+        foreach ($process in $processes)
+        {
+            $returnval = $process.terminate()
+            $processid = $process.handle
+            if($returnval.returnvalue -eq 0)
+            {
+                write-host "The process {{item}} `($processid`) terminated successfully"
+            }
+            else 
+            {
+                write-host "The process {{item}} `($processid`) termination has some problems"
+            }
+        }
+      with_items: "{{ ProcessList.split(',') }}"
+      register: killed_processes
+
+    - name: Verify Processes
+      debug: 
+        var: killed_processes

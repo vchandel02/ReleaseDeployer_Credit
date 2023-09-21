@@ -1,0 +1,5 @@
+---
+# tasks file for folder backup
+- name: "{{taskname}}"
+  win_shell: |
+    Copy-Item "{{ Source_Folder_Path }}" -Destination {{Destination_Folder_Path}}_{{ ansible_date_time.iso8601_basic_short}}\ -Recurse

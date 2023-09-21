@@ -1,0 +1,107 @@
+---
+- name: PlatformCode deployment on External web server (DMZ)
+  hosts: "{{MachineGroupName}}"
+  become: yes
+  become_method: runas
+  become_user: System
+  gather_facts: yes
+  vars_files:
+   - ~/ReleaseDeployer/Ansible/Credit_Processing/CommonVars/PlatformCode_DMZ.yml
+
+  ######## Pre deployement steps ########
+
+  pre_tasks:
+
+    ######## Take backup of Services folder ########
+
+    - name: Take backup of {{RemoteHost_Services_Folder_Path}} folder
+      win_shell: Copy-Item "{{ RemoteHost_Services_Folder_Path }}" -Destination {{BackupFolderPath}}\{{ ServicesModuleName }}_{{ ansible_date_time.iso8601_basic_short}}\ -Recurse
+
+
+    ######## Take backup of ScaleServices folder ########
+
+    - name: Take backup of {{RemoteHost_ScaleServices_Folder_Path}} folder
+      win_shell: Copy-Item "{{ RemoteHost_ScaleServices_Folder_Path }}" -Destination {{BackupFolderPath}}\{{ ScaleServicesModuleName }}_{{ ansible_date_time.iso8601_basic_short}}\ -Recurse
+      
+
+    ######## Create Package folder ########
+
+    - name: Create Package folder
+      win_file:
+        path: "{{PackageFolderPath}}"
+        state: directory
+
+    ######## Download PlatformCode package ########
+
+    - name: Download PlatformCode package {{PackageFileName}}{{PackageFileExtension}} from Ansible controller machine to DMZ server
+      win_copy:
+        src: "{{ PackageSourceLocation }}/{{PackageFileName}}{{PackageFileExtension}}"
+        dest: "{{ DestinationFolderPath }}"
+        remote_src: no
+      
+    ######## Extract PlatformCode package ########
+
+    - name: Extract {{DestinationFolderPath}} to {{UnzipFolderPath}}
+      win_unzip:
+        src: "{{DestinationFolderPath}}"
+        dest: "{{UnzipFolderPath}}"
+        delete_archive: yes
+      
+
+    ######## Stop Scale services ########
+
+    - name: Stop Scale services
+      win_service:
+        name: DbbScaleService
+        state: stopped
+      register: DbbScaleServiceStatus  
+
+    ######## SCheck Scale Service state ########
+
+    - name: Check Scale Service state 
+      debug: 
+        var: DbbScaleServiceStatus.state
+
+  ########################################################################################################
+
+  ######## Deployement starts ########
+
+  tasks:
+
+    ######## Deploy Services ########
+
+    - name: Deploy Services from {{ UnzipFolderPath }}\{{ServicesModuleName}}\ to {{ RemoteHost_Services_Folder_Path }}
+      win_shell: Copy-Item -Path {{ UnzipFolderPath }}\{{ServicesModuleName}}\* -Destination {{ RemoteHost_Services_Folder_Path }} -Recurse -Force
+      
+    ######## Deploy ScaleServices ########
+
+    - name: Deploy ScaleServices from {{ UnzipFolderPath }}\{{ScaleServicesModuleName}}\ to {{ RemoteHost_ScaleServices_Folder_Path }}
+      win_shell: Copy-Item -Path {{ UnzipFolderPath }}\{{ScaleServicesModuleName}}\* -Destination {{ RemoteHost_ScaleServices_Folder_Path }} -Recurse -Force
+      
+    ######## Delete shared memory ########
+
+    - name: Delete shmem.bin from {{ SharedMemory_Path }}
+      win_file:
+        path: "{{SharedMemory_Path}}\\shmem.bin"
+        state: absent
+      when: DbbScaleServiceStatus.state == "stopped"
+
+    ######## Start Scale services ########
+    - name: Start Scale services
+      win_service:
+        name: DbbScaleService
+        state: started
+      register: DbbScaleServiceStatus_PostUpgrade 
+      
+    ######## Check Scale Service state ########
+
+    - name: Check Scale Service state 
+      debug: 
+        var: DbbScaleServiceStatus_PostUpgrade.state
+      
+
+    
+    
+
+    
+            

@@ -1,0 +1,15 @@
+---
+PackageSourceLocation: ~/ReleaseDeployer/Package
+PackageFileExtension: .zip
+PackageFolderPath: D:\Packages
+CoreServicesModuleName: CoreServices
+CoreWebAPIModuleName: CoreWebAPI
+DestinationFolderPath_CoreServices: "{{PackageFolderPath}}\\{{PackageFileName_CoreServices}}{{PackageFileExtension}}"
+DestinationFolderPath_CoreWebAPI: "{{PackageFolderPath}}\\{{PackageFileName_CoreWebAPI}}{{PackageFileExtension}}"
+UnzipFolderPath_CoreServices: "{{PackageFolderPath}}\\{{PackageFileName_CoreServices}}"
+UnzipFolderPath_CoreWebAPI: "{{PackageFolderPath}}\\{{PackageFileName_CoreWebAPI}}"
+RemoteHost_CoreServices_Folder_Path: D:\WebServer\WCF
+RemoteHost_CoreWebAPI_Folder_Path: D:\WebServer\CoreWebAPI
+IIS_AppPool_Name_CoreServices: WCF
+IIS_AppPool_Name_CoreWebAPI: CoreWebApi
+BackupFolderPath: D:\Backup

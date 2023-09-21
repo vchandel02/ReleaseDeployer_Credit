@@ -1,0 +1,9 @@
+---
+PackageSourceLocation: ~/ReleaseDeployer/Package
+PackageFileExtension: .zip
+PackageFolderPath: D:\Packages
+DestinationFolderPath: "{{PackageFolderPath}}\\{{PackageFileName}}{{PackageFileExtension}}"
+UnzipFolderPath: "{{PackageFolderPath}}\\{{PackageFileName}}"
+RemoteHost_DSL_Folder_Path: D:\CreditProcessing\DSLs
+RemoteHost_BatchScript_Folder_Path: D:\CreditProcessing\BatchScripts
+BackupFolderPath: D:\Backup

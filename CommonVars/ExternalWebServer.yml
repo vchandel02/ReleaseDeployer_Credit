@@ -1,0 +1,32 @@
+---
+PackageSourceLocation: ~/ReleaseDeployer/Package
+PackageFileExtension: .zip
+PackageFolderPath: D:\Packages
+
+CoreCardAppLinksModuleName: CoreCardAppLinks
+IIS_AppPool_Name_CoreCardAppLinks: CoreCardAppLinks
+RemoteHost_CoreCardAppLinks_Folder_Path: D:\PublishCode\CoreCardAppLinks\
+
+CDNModuleName: CDN
+IIS_AppPool_Name_CDN: CreditCDN
+RemoteHost_CDN_Folder_Path: D:\PublishCode\CDN\
+
+CoreConsumerModuleName: CoreConsumer
+IIS_AppPool_Name_CoreConsumer: CoreConsumer
+RemoteHost_CoreConsumer_Folder_Path: D:\PublishCode\CoreConsumer
+
+CoreCollectionsModuleName: CoreCollections
+IIS_AppPool_Name_CoreCollections: corecollections
+RemoteHost_CoreCollections_Folder_Path: D:\PublishCode\corecollections
+
+CoreCreditModuleName: CoreCredit
+IIS_AppPool_Name_CoreCredit: CoreCredit
+RemoteHost_CoreCredit_Folder_Path: D:\PublishCode\CoreCredit
+
+CreditSelfServiceModuleName: CreditSelfService
+IIS_AppPool_Name_CreditSelfService: CreditSelfService
+RemoteHost_CreditSelfService_Folder_Path: D:\PublishCode\CreditSelfService
+
+DestinationFolderPath: "{{PackageFolderPath}}\\{{PackageFileName}}{{PackageFileExtension}}"
+UnzipFolderPath: "{{PackageFolderPath}}\\{{PackageFileName}}"
+BackupFolderPath: D:\Backup

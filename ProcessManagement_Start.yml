@@ -1,0 +1,18 @@
+---
+- name: CoreCARD Process Management (Start)
+  hosts: "{{MachineGroupName}}"
+  become: yes
+  become_method: runas
+  become_user: System
+  gather_facts: no
+  
+  tasks:
+    
+    - name: Start Process
+      win_shell: Start-ScheduledTask -TaskName "{{item}}"
+      with_items: "{{ ScheduledTaskList.split(',') }}"
+      register: start_processes
+
+    - name: Verify Processes
+      debug: 
+        var: start_processes

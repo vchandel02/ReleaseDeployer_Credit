@@ -1,0 +1,134 @@
+---
+- name: WCF deployment
+  hosts: "{{MachineGroupName}}"
+  become: yes
+  become_method: runas
+  become_user: System
+  gather_facts: yes
+  vars_files:
+   - ~/ReleaseDeployer/Ansible/Credit_Processing/CommonVars/WCF.yml
+   - ~/ReleaseDeployer/Ansible/Credit_Processing/CommonVars/UserCredentials.yml
+
+  ######## Pre deployments steps ########
+
+  pre_tasks:
+
+    ######## Take backup of CoreServices/WCF folder ########
+    - name: Take backup of CoreServices/WCF folder
+      win_shell: Copy-Item "{{ RemoteHost_CoreServices_Folder_Path }}" -Destination {{BackupFolderPath}}\{{CoreServicesModuleName}}_{{ ansible_date_time.iso8601_basic_short}}\ -Recurse
+      
+    ######## Take backup of CoreWebAPI folder ########
+    - name: Take backup of CoreWebAPI folder
+      win_shell: Copy-Item "{{ RemoteHost_CoreWebAPI_Folder_Path }}" -Destination {{BackupFolderPath}}\{{CoreWebAPIModuleName}}_{{ ansible_date_time.iso8601_basic_short}}\ -Recurse
+      
+    ######## Create Package folder ########
+    - name: Create Package folder
+      win_file:
+        path: "{{PackageFolderPath}}"
+        state: directory
+
+    ######## Download CoreServices package ########
+    - name: Download CoreServices package {{PackageFileName_CoreServices}}{{PackageFileExtension}} from Ansible controller machine to LAN servers
+      win_copy:
+        src: "{{ PackageSourceLocation }}/{{PackageFileName_CoreServices}}{{PackageFileExtension}}"
+        dest: "{{ DestinationFolderPath_CoreServices }}"
+        remote_src: no
+
+    ######## Download CoreWebAPI package ########
+    - name: Download CoreWebAPI package {{PackageFileName_CoreWebAPI}}{{PackageFileExtension}} from Ansible controller machine to LAN servers
+      win_copy:
+        src: "{{ PackageSourceLocation }}/{{PackageFileName_CoreWebAPI}}{{PackageFileExtension}}"
+        dest: "{{ DestinationFolderPath_CoreWebAPI }}"
+        remote_src: no
+      
+    ######## Extract CoreServices package ########
+    - name: Extract CoreServices package {{PackageFileName_CoreServices}}{{PackageFileExtension}} to {{UnzipFolderPath_CoreServices}}
+      win_unzip:
+        src: "{{DestinationFolderPath_CoreServices}}"
+        dest: "{{UnzipFolderPath_CoreServices}}"
+        delete_archive: yes
+
+    ######## Extract CoreWebAPI package ########
+    - name: Extract CoreWebAPI package {{PackageFileName_CoreWebAPI}}{{PackageFileExtension}} to UnzipFolderPath_CoreWebAPI
+      win_unzip:
+        src: "{{DestinationFolderPath_CoreWebAPI}}"
+        dest: "{{UnzipFolderPath_CoreWebAPI}}"
+        delete_archive: yes
+      
+    ######## Stop CoreServices AppPool ########
+    - name: Stop CoreServices AppPool
+      win_iis_webapppool:
+        name: "{{ IIS_AppPool_Name_CoreServices }}"
+        state: stopped
+      register: CoreServices_AppPool
+      
+    ######## Check CoreServices AppPool state ########
+    - name: Check CoreServices AppPool state 
+      debug: 
+        msg: "The CoreServices AppPool state is: {{CoreServices_AppPool.info.state}} and configured with user: {{CoreServices_AppPool.info.processModel.userName}}" 
+
+    ######## Stop CoreWebAPI AppPool ########
+    - name: Stop CoreWebAPI AppPool
+      win_iis_webapppool:
+        name: "{{ IIS_AppPool_Name_CoreWebAPI }}"
+        state: stopped
+      register: CoreWebAPI_AppPool
+      
+    ######## Check CoreWebAPI AppPool state ########
+    - name: Check CoreWebAPI AppPool state 
+      debug: 
+        msg: "The CoreServices AppPool state is: {{CoreWebAPI_AppPool.info.state}} and configured with user: {{CoreWebAPI_AppPool.info.processModel.userName}}" 
+
+  ########################################################################################################
+
+  ######## Deployement starts ########
+
+  tasks:
+
+    ######## Deploy CoreServices ########
+    - name: Deploy CoreServices from {{ UnzipFolderPath_CoreServices }}\ to {{ RemoteHost_CoreServices_Folder_Path }}
+      win_shell: Copy-Item -Path {{ UnzipFolderPath_CoreServices }}\* -Destination {{ RemoteHost_CoreServices_Folder_Path }} -Recurse -Force
+      
+    ######## Deploy CoreWebAPI ########
+    - name: Deploy CoreWebAPI from {{ UnzipFolderPath_CoreWebAPI }}\ to {{ RemoteHost_CoreWebAPI_Folder_Path }}
+      win_shell: Copy-Item -Path {{ UnzipFolderPath_CoreWebAPI }}\* -Destination {{ RemoteHost_CoreWebAPI_Folder_Path }} -Recurse -Force
+      
+    ######## Change IIS AppPool user for CoreServices ########
+
+    - name: Change IIS AppPool user for CoreServices/WCF
+      win_iis_webapppool:
+        name: "{{ IIS_AppPool_Name_CoreServices }}"
+        state: started
+        attributes:
+          processModel.identityType: SpecificUser
+          processModel.userName: '{{UserName}}'
+          processModel.password: '{{Password}}'
+          processModel.loadUserProfile: true
+      register: CoreServices_AppPool_PostUpgrade
+
+    - name: Check CoreServices AppPool state 
+      debug: 
+        msg: "The CoreServices AppPool state is: {{CoreServices_AppPool_PostUpgrade.info.state}} and configured with user: {{CoreServices_AppPool_PostUpgrade.info.processModel.userName}}" 
+
+
+    ######## Change IIS AppPool user for CoreWebAPI ########
+
+    - name: Change IIS AppPool user for CoreWebAPI
+      win_iis_webapppool:
+        name: "{{ IIS_AppPool_Name_CoreWebAPI }}"
+        state: started
+        attributes:
+          processModel.identityType: SpecificUser
+          processModel.userName: '{{UserName}}'
+          processModel.password: '{{Password}}'
+          processModel.loadUserProfile: true
+      register: CoreWebAPI_AppPool_PostUpgrade
+
+    - name: Check CoreWebAPI AppPool state 
+      debug: 
+        msg: "The CoreWebAPI AppPool state is: {{CoreWebAPI_AppPool_PostUpgrade.info.state}} and configured with user: {{CoreWebAPI_AppPool_PostUpgrade.info.processModel.userName}}" 
+
+
+
+    
+            

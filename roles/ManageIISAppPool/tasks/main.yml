@@ -1,0 +1,6 @@
+---
+# tasks file for ManageIISAppPool
+- name: "{{taskname}}"
+  win_iis_webapppool:
+    name: "{{ ApplicationPoolName }}"
+    state: "{{state}}"

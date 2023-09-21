@@ -1,0 +1,12 @@
+---
+PackageSourceLocation: ~/ReleaseDeployer/Package
+PackageFileExtension: .zip
+PackageFolderPath: D:\Packages
+
+CoreAppModuleName: CoreApp
+IIS_AppPool_Name_CoreApp: CoreApp
+RemoteHost_CoreApp_Folder_Path: D:\PublishCode\CoreApp\
+
+DestinationFolderPath: "{{PackageFolderPath}}\\{{PackageFileName}}{{PackageFileExtension}}"
+UnzipFolderPath: "{{PackageFolderPath}}\\{{PackageFileName}}"
+BackupFolderPath: D:\Backup

@@ -1,0 +1,148 @@
+---
+- name: External Web Server Deployment
+  hosts: "{{MachineGroupName}}"
+  become: yes
+  become_method: runas
+  become_user: System
+  gather_facts: yes
+  vars_files:
+   - ~/ReleaseDeployer/Ansible/Credit_Processing/CommonVars/ExternalWebServer.yml
+
+  ######## Pre deployments steps ########
+
+  pre_tasks:
+
+    ######## Create Package folder ########
+    - name: Create Package folder
+      win_file:
+        path: "{{PackageFolderPath}}"
+        state: directory
+
+    ######## Download External web server package ########
+
+    - name: Download External web server package package {{PackageFileName}}{{PackageFileExtension}} from Ansible controller machine to DMZ server
+      win_copy:
+        src: "{{ PackageSourceLocation }}/{{PackageFileName}}{{PackageFileExtension}}"
+        dest: "{{ DestinationFolderPath }}"
+        remote_src: no
+      
+    ######## Extract External web server package ########
+
+    - name: Extract {{DestinationFolderPath}} to {{UnzipFolderPath}}
+      win_unzip:
+        src: "{{DestinationFolderPath}}"
+        dest: "{{UnzipFolderPath}}"
+        delete_archive: yes
+
+    ######## Verify module folders in the package {{PackageFolderPath}}\\{{PackageFileName}}\\{{CoreCardAppLinksModuleName}} ########
+
+    - name: Check if the CoreCardAppLinks folder exists in the package
+      win_stat:
+        path: "{{PackageFolderPath}}\\{{PackageFileName}}\\{{CoreCardAppLinksModuleName}}"
+      register: folder_check_CoreCardAppLinks
+
+    - name: Check if the CDN folder exists in the package
+      win_stat:
+        path: "{{PackageFolderPath}}\\{{PackageFileName}}\\{{CDNModuleName}}"
+      register: folder_check_CDN
+
+    - name: Check if the CoreConsumer folder exists in the package
+      win_stat:
+        path: "{{PackageFolderPath}}\\{{PackageFileName}}\\{{CoreConsumerModuleName}}"
+      register: folder_check_CoreConsumer
+
+    - name: Check if the CoreCollections folder exists in the package
+      win_stat:
+        path: "{{PackageFolderPath}}\\{{PackageFileName}}\\{{CoreCollectionsModuleName}}"
+      register: folder_check_CoreCollections
+
+    - name: Check if the CoreCredit folder exists in the package
+      win_stat:
+        path: "{{PackageFolderPath}}\\{{PackageFileName}}\\{{CoreCreditModuleName}}"
+      register: folder_check_CoreCredit
+
+    - name: Check if the CreditSelfService folder exists in the package
+      win_stat:
+        path: "{{PackageFolderPath}}\\{{PackageFileName}}\\{{CreditSelfServiceModuleName}}"
+      register: folder_check_CreditSelfService
+
+    ######## End verify modules in the package ########
+
+    ######## Take backup of CoreCardAppLinks folder  ########
+    - name: Take backup of CoreCardAppLinks folder
+      win_shell: |
+        Copy-Item "{{ RemoteHost_CoreCardAppLinks_Folder_Path }}" -Destination {{ BackupFolderPath }}\\{{ CoreCardAppLinksModuleName }}_{{ ansible_date_time.iso8601_basic_short}}\ -Recurse
+      when: folder_check_CoreCardAppLinks.stat.exists
+
+    ######## Take backup of CDN folder  ########
+    - name: Take backup of CDN folder
+      win_shell: |
+        Copy-Item "{{ RemoteHost_CDN_Folder_Path }}" -Destination {{ BackupFolderPath }}\\{{ CDNModuleName }}_{{ ansible_date_time.iso8601_basic_short}}\ -Recurse
+      when: folder_check_CDN.stat.exists
+
+    ######## Take backup of CoreConsumer folder  ########
+    - name: Take backup of CoreConsumer folder
+      win_shell: |
+        Copy-Item "{{ RemoteHost_CoreConsumer_Folder_Path }}" -Destination {{ BackupFolderPath }}\\{{ CoreConsumerModuleName }}_{{ ansible_date_time.iso8601_basic_short}}\ -Recurse
+      when: folder_check_CoreConsumer.stat.exists
+
+  ######## Take backup of CoreCollections folder  ########
+    - name: Take backup of CoreCollections folder
+      win_shell: |
+        Copy-Item "{{ RemoteHost_CoreCollections_Folder_Path }}" -Destination {{ BackupFolderPath }}\\{{ CoreCollectionsModuleName }}_{{ ansible_date_time.iso8601_basic_short}}\ -Recurse
+      when: folder_check_CoreCollections.stat.exists
+
+  ######## Take backup of CoreCredit folder  ########
+    - name: Take backup of CoreCredit folder
+      win_shell: |
+        Copy-Item "{{ RemoteHost_CoreCredit_Folder_Path }}" -Destination {{ BackupFolderPath }}\\{{ CoreCreditModuleName }}_{{ ansible_date_time.iso8601_basic_short}}\ -Recurse
+      when: folder_check_CoreCredit.stat.exists
+
+  ######## Take backup of CreditSelfService folder  ########
+    - name: Take backup of CreditSelfService folder
+      win_shell: |
+        Copy-Item "{{ RemoteHost_CreditSelfService_Folder_Path }}" -Destination {{ BackupFolderPath }}\\{{ CreditSelfServiceModuleName }}_{{ ansible_date_time.iso8601_basic_short}}\ -Recurse
+      when: folder_check_CreditSelfService.stat.exists
+
+
+  ########################################################################################################
+
+  ######## Deployement starts ########
+
+  tasks:
+
+  ######## Deploy CoreCardAppLinks  ########
+    - name: Deploy CoreCardAppLinks
+      win_shell: |
+        Copy-Item "{{ UnzipFolderPath }}\\{{ CoreCardAppLinksModuleName }}\*" -Destination "{{RemoteHost_CoreCardAppLinks_Folder_Path}}" -Recurse -Force
+      when: folder_check_CoreCardAppLinks.stat.exists
+
+  ######## Deploy CDN ########
+    - name: Deploy CDN
+      win_shell: |
+        Copy-Item "{{ UnzipFolderPath }}\\{{ CDNModuleName }}\*" -Destination "{{RemoteHost_CDN_Folder_Path}}" -Recurse -Force
+      when: folder_check_CDN.stat.exists
+
+  ######## Deploy CoreConsumer ########
+    - name: Deploy CoreConsumer
+      win_shell: |
+        Copy-Item "{{ UnzipFolderPath }}\\{{ CoreConsumerModuleName }}\*" -Destination "{{RemoteHost_CoreConsumer_Folder_Path}}" -Recurse -Force
+      when: folder_check_CoreConsumer.stat.exists
+
+  ######## Deploy CoreCollections ########
+    - name: Deploy CoreCollections
+      win_shell: |
+        Copy-Item "{{ UnzipFolderPath }}\\{{ CoreCollectionsModuleName }}\*" -Destination "{{RemoteHost_CoreCollections_Folder_Path}}" -Recurse -Force
+      when: folder_check_CoreCollections.stat.exists
+
+  ######## Deploy CoreCredit ########
+    - name: Deploy CoreCredit
+      win_shell: |
+        Copy-Item "{{ UnzipFolderPath }}\\{{ CoreCreditModuleName }}\*" -Destination "{{RemoteHost_CoreCredit_Folder_Path}}" -Recurse -Force
+      when: folder_check_CoreCredit.stat.exists
+
+  ######## Deploy CreditSelfService ########
+    - name: Deploy CreditSelfService
+      win_shell: |
+        Copy-Item "{{ UnzipFolderPath }}\\{{ CreditSelfServiceModuleName }}\*" -Destination "{{RemoteHost_CreditSelfService_Folder_Path}}" -Recurse -Force
+      when: folder_check_CreditSelfService.stat.exists

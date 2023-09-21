@@ -1,0 +1,41 @@
+---
+# tasks file for ProcessManagementUsingAPI
+- name: Start process
+  win_shell: |
+    $DashUsername = "{{DashboardAPI_UserName}}"
+    $DashPassword = "{{DashboardAPI_Password}}"
+    $ActionType = "{{ActionType}}"
+    $AuthenticationToken = $NULL
+    $AuthenticationToken = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${DashUsername}:${DashPassword}"))
+    $DashApiUrl = $NULL
+    if($ActionType -eq "start"){
+        $DashApiUrl    = "http://vmdashtest2:84/DashboardAPI/api/StartProcess?ptype={{ProcessType}}&machine={{TargetMachineName}}"  #Process Start
+    }
+    elseif($ActionType -eq "stop"){
+        $DashApiUrl    = "http://vmdashtest2:84/DashboardAPI/api/AbortProcess?JobId=bed8c393-fcb6-4bb2-8f40-c1fe531083e4"  #Stop Process
+    }
+    elseif($ActionType -eq "machinelist"){
+        $DashApiUrl    = "http://vmdashtest2:84/DashboardAPI/api/MachineList"  #Machines List
+    }
+    elseif($ActionType -eq "querymachine"){
+        $DashApiUrl    = "http://vmdashtest2:84/DashboardAPI/api/QueryMachine?machine={{TargetMachineName}}"  #Machine Details
+    }
+    $Parameters = @{
+
+        Uri         = $DashApiUrl
+        Method      = "Get"
+        ContentType = "application/json"
+        Headers     = @{
+            Authorization = "Basic $AuthenticationToken"
+        }
+    }
+
+    Invoke-RestMethod @Parameters
+
+    Clear-Variable AuthenticationToken
+    Clear-Variable DashApiUrl
+  register: output
+
+- name: Verify the output
+  debug: 
+    var: output.stdout_lines

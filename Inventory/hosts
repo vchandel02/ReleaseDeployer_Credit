@@ -1,0 +1,38 @@
+---
+
+ExternalWebServers:
+  hosts:
+    10.110.0.178:
+  vars:
+    ansible_user: configuser
+    ansible_password: C0nf!gus3r
+    ansible_winrm_transport: ntlm
+AppServers:
+  hosts:
+    PerfDevOps006:
+    VMDashTest1:
+WCFServers:
+  hosts:
+    PerfDevOps002:
+    PerfDevOps003:
+AuthServers:
+  hosts:
+    PerfDevOps004:
+    PerfDevOps005:
+WorkflowServers:
+  hosts:
+    VMDashTest2:
+    VMDashTest3:
+MachineGroup_TNP:
+  hosts:
+    PerfDevOps006:
+    VMDashTest2:
+all:
+  vars:
+    ansible_user: vchandel@NEWVISIONSOFTWARE.COM
+    ansible_connection: winrm
+    ansible_winrm_server_cert_validation: ignore
+    ansible_winrm_transport: kerberos
+    ansible_winrm_port: 5985
+    ansible_winrm_scheme: http
+        
