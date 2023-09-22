@@ -6,7 +6,7 @@
   become_user: System
   gather_facts: yes
   vars_files:
-   - ~/ReleaseDeployer/Ansible/Credit_Processing/CommonVars/PlatformCode_DMZ.yml
+   - CommonVars/PlatformCode_DMZ.yml
 
   ######## Pre deployement steps ########
 
