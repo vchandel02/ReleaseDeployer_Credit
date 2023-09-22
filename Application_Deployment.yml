@@ -5,6 +5,7 @@
   become_method: runas
   become_user: System
   gather_facts: yes
+  #Variable file
   vars_files:
    - CommonVars/Application.yml
 
