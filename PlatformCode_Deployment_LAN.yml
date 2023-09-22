@@ -6,8 +6,8 @@
   become_user: System
   gather_facts: yes
   vars_files:
-   - ~/ReleaseDeployer/Ansible/Credit_Processing/CommonVars/PlatformCode_LAN.yml
-   - ~/ReleaseDeployer/Ansible/Credit_Processing/CommonVars/UserCredentials.yml
+   - CommonVars/PlatformCode_LAN.yml
+   - CommonVars/UserCredentials.yml
 
   ######## Pre deployement steps ########
 

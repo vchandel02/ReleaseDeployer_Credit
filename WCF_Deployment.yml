@@ -6,8 +6,8 @@
   become_user: System
   gather_facts: yes
   vars_files:
-   - ~/ReleaseDeployer/Ansible/Credit_Processing/CommonVars/WCF.yml
-   - ~/ReleaseDeployer/Ansible/Credit_Processing/CommonVars/UserCredentials.yml
+   - CommonVars/WCF.yml
+   - CommonVars/UserCredentials.yml
 
   ######## Pre deployments steps ########
 
