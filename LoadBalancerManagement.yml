@@ -6,7 +6,7 @@
   become_user: System
   gather_facts: no
   vars_files:
-    - CommonVars/LoadBalancer.yml
+    - CommonVars/LoadBalancer_Vars.yml
   
   tasks:
     
