@@ -1,0 +1,63 @@
+---
+- name: CoreCARD Service Management (Start)
+  hosts: "{{MachineGroupName}}"
+  become: yes
+  become_method: runas
+  become_user: System
+  gather_facts: no
+  vars_files:
+   - CommonVars/UserCredentials.yml
+  tasks:
+    
+    ######## Stop Service ########
+    - name: Stop Service
+      win_service:
+        name: "{{item}}"
+        state: stopped
+      with_items: "{{ ServiceList.split(',') }}"
+      register: stop_service
+      when: OperationType == "stopservice" or OperationType == "disableservice"  or OperationType == "changeserviceuser"
+
+    - name: Verify Service
+      debug: 
+        var: stop_service
+      when: OperationType == "stopservice" or OperationType == "disableservice"
+
+    ######## Change Service User ########
+    - name: Change Service User
+      win_service:
+        name: "{{item}}"
+        username: '{{UserName}}'
+        password: '{{Password}}'
+        state: started
+      with_items: "{{ ServiceList.split(',') }}"
+      register: change_service_user
+      when: OperationType == "changeserviceuser"
+
+    ######## Start Service ########
+    - name: Start Service
+      win_service:
+        name: "{{item}}"
+        state: started
+      with_items: "{{ ServiceList.split(',') }}"
+      register: start_service
+      when: OperationType == "startservice" or OperationType == "enableservice"
+
+    - name: Verify Service
+      debug: 
+        var: start_service
+      when: OperationType == "startservice"
+
+    ######## Set Windows Service to Manual Start ########
+    - name: Set Windows Service to Manual Start
+      win_shell: Set-Service -Name "{{item}}" -StartupType Manual
+      with_items: "{{ ServiceList.split(',') }}"
+      register: disable_service
+      when: OperationType == "disableservice"
+    
+    ######## Set Windows Service to Automatic Start ########
+    - name: Set Windows Service to Automatic Start
+      win_shell: Set-Service -Name "{{item}}" -StartupType Automatic
+      with_items: "{{ ServiceList.split(',') }}"
+      register: enable_service
+      when: OperationType == "enableservice"

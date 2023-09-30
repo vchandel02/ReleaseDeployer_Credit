@@ -1,0 +1,170 @@
+---
+- name: CoreCARD IIS Management (Start)
+  hosts: "{{MachineGroupName}}"
+  become: yes
+  become_method: runas
+  become_user: System
+  gather_facts: no
+  vars_files:
+   - CommonVars/UserCredentials.yml
+  
+  tasks:
+    
+    ######## Stop IIS ########
+    - name: Stop IIS
+      win_service:
+        name: W3SVC
+        state: stopped
+      register: stop_iis
+      when: OperationType == "stopiis"
+
+    - name: Verify IIS Service
+      debug: 
+        var: stop_iis
+      when: OperationType == "stopiis"
+
+    ######## Start IIS ########
+    - name: Start IIS
+      win_service:
+        name: W3SVC
+        state: started
+      register: start_iis
+      when: OperationType == "startiis"
+
+    - name: Verify IIS Service
+      debug: 
+        var: start_iis
+      when: OperationType == "startiis"
+
+    ######## Restart IIS ########
+    - name: Restart IIS
+      win_service:
+        name: W3SVC
+        state: restarted
+      register: restart_iis
+      when: OperationType == "restartiis"
+
+    - name: Verify IIS Service
+      debug: 
+        var: restart_iis
+      when: OperationType == "restartiis"
+
+    ######## Get IIS AppPool Name ########
+    - name: Get IIS AppPool Name for all the given websites
+      win_shell: |
+        $websiteName = "{{item}}"
+        $appPoolName = (Get-Website -Name $websiteName).applicationPool
+        Write-Output $appPoolName
+      with_items: "{{ WebsiteList.split(',') }}"
+      register: app_pool_name
+      when: OperationType == "stopapppool" or OperationType == "startapppool" or OperationType == "restartapppool"  or OperationType == "changeapppooluser"
+
+    - name: Display AppPool Name
+      debug:
+        var: app_pool_name
+      when: OperationType == "stopapppool" or OperationType == "startapppool" or OperationType == "restartapppool" or OperationType == "changeapppooluser"
+
+    #- name: Display AppPool Name
+    #  debug: msg="Website Name={{item.item}}, AppPool Name={{item.stdout | regex_replace('[\\r\\n\\t]+','') }}"
+    #  with_items: "{{ app_pool_result.results }}"
+    #  when: OperationType == "stopapppool"
+
+    ######## Stop AppPool ########
+    - name: Stop IIS AppPool
+      win_iis_webapppool:
+        name: "{{ item.stdout | regex_replace('[\\r\\n\\t]+','')}}"
+        state: stopped
+      with_items: "{{ app_pool_name.results }}"
+      register: apppool_stop
+      when: OperationType == "stopapppool"
+
+    ######## Verify AppPool ########
+    - name: Verify AppPool status
+      debug:
+        #var: apppool.results[0].info.attributes.state
+        var: "{{item.info.attributes.state}}"
+      loop: "{{apppool_stop.results}}"
+      when: OperationType == "stopapppool"
+
+    ######## Start AppPool ########
+    - name: Start IIS AppPool
+      win_iis_webapppool:
+        name: "{{ item.stdout | regex_replace('[\\r\\n\\t]+','')}}"
+        state: started
+      with_items: "{{ app_pool_name.results }}"
+      register: apppool_start
+      when: OperationType == "startapppool"
+
+    ######## Verify AppPool ########
+    - name: Verify AppPool status
+      debug:
+        #var: apppool.results[0].info.attributes.state
+        var: "{{item.info.attributes.state}}"
+      loop: "{{apppool_start.results}}"
+      when: OperationType == "startapppool"
+
+    ######## Restart AppPool ########
+    - name: Restart IIS AppPool
+      win_iis_webapppool:
+        name: "{{ item.stdout | regex_replace('[\\r\\n\\t]+','')}}"
+        state: restarted
+      with_items: "{{ app_pool_name.results }}"
+      register: apppool_restart
+      when: OperationType == "restartapppool"
+
+    ######## Verify AppPool ########
+    - name: Verify AppPool status
+      debug:
+        #var: apppool.results[0].info.attributes.state
+        var: "{{item.info.attributes.state}}"
+      loop: "{{apppool_restart.results}}"
+      when: OperationType == "restartapppool"
+
+    ######## Change AppPool User ########
+    - name: Change IIS AppPool User
+      win_iis_webapppool:
+        name: "{{ item.stdout | regex_replace('[\\r\\n\\t]+','') }}"
+        state: started
+        attributes:
+          processModel.identityType: SpecificUser
+          processModel.userName: '{{UserName}}'
+          processModel.password: '{{Password}}'
+          processModel.loadUserProfile: true
+      with_items: "{{ app_pool_name.results }}"
+      register: apppooluserstatus
+      when: OperationType == "changeapppooluser"
+
+    - name: Verify AppPool status
+      debug:
+        #var: apppool.results[0].info.attributes.state
+        var: "{{item.info.attributes.state}}"
+      loop: "{{apppooluserstatus.results}}"
+      when: OperationType == "changeapppooluser"
+
+    ######## Stop Website ########
+    - name: Stop Website
+      win_iis_website:
+        name: "{{ item }}"
+        state: stopped
+      with_items: "{{ WebsiteList.split(',') }}"
+      register: stopwebsite
+      when: OperationType == "stopwebsite"
+
+    - name: Verify Website status
+      debug:
+        var: stopwebsite
+      when: OperationType == "stopwebsite"
+
+    ######## Start Website ########
+    - name: Start Website
+      win_iis_website:
+        name: "{{ item }}"
+        state: started
+      with_items: "{{ WebsiteList.split(',') }}"
+      register: startwebsite
+      when: OperationType == "startwebsite"
+
+    - name: Verify Website status
+      debug:
+        var: startwebsite
+      when: OperationType == "startwebsite"
