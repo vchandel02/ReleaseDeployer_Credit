@@ -1,0 +1,55 @@
+---
+- name: CoreCARD Process Management (Start)
+  hosts: "{{MachineGroupName}}"
+  become: yes
+  become_method: runas
+  become_user: System
+  gather_facts: no
+  vars_files:
+   - CommonVars/UserCredentials.yml
+  
+  tasks:
+    
+    - name: Start ScheduledTask
+      win_shell: Start-ScheduledTask -TaskName "{{item}}"
+      with_items: "{{ ScheduledTaskList.split(',') }}"
+      register: start_scheduledtask
+      when: OperationType == "start"
+
+    - name: Verify ScheduledTask
+      debug: 
+        var: start_scheduledtask
+      when: OperationType == "start"
+
+    - name: Disable ScheduledTask
+      win_shell: Disable-ScheduledTask -TaskName "{{item}}"
+      with_items: "{{ ScheduledTaskList.split(',') }}"
+      register: disable_scheduledtask
+      when: OperationType == "disable"
+
+    - name: Verify ScheduledTask
+      debug: 
+        var: disable_scheduledtask
+      when: OperationType == "disable"
+
+    - name: Enable ScheduledTask
+      win_shell: Enable-ScheduledTask -TaskName "{{item}}"
+      with_items: "{{ ScheduledTaskList.split(',') }}"
+      register: enable_scheduledtask
+      when: OperationType == "enable"
+
+    - name: Verify ScheduledTask
+      debug: 
+        var: enable_scheduledtask
+      when: OperationType == "enable"
+
+    - name: Change ScheduledTask User
+      win_shell: Set-ScheduledTask -TaskName "{{item}}" -User {{UserName}} -Password {{Password}}
+      with_items: "{{ ScheduledTaskList.split(',') }}"
+      register: enable_scheduledtask
+      when: OperationType == "changeuser"
+
+    - name: Verify ScheduledTask User
+      debug: 
+        var: enable_scheduledtask
+      when: OperationType == "changeuser"

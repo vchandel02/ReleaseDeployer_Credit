@@ -1,0 +1,5 @@
+---
+UserName: vijay
+Password: vijju@123
+IPAddress: 10.150.0.9
+VirtualServiceName: LoadBalancer_Test1

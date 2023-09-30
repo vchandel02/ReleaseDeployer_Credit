@@ -1,0 +1,23 @@
+---
+- name: CoreCARD Load Balancer Management
+  hosts: "{{MachineGroupName}}"
+  become: yes
+  become_method: runas
+  become_user: System
+  gather_facts: no
+  vars_files:
+    - CommonVars/LoadBalancer.yml
+  
+  tasks:
+    
+    - name: Disable Servers
+      win_shell: |
+        $LOAD_BALANCER= "{{IPAddress}}"
+        $USERNAME= "{{UserName}}"
+        $PASSWORD= "{{Password}}"
+        $CREDENTIAL = New-Object System.Management.Automation.PSCredential ($USERNAME, $PASSWORD)
+        $token = Get-Token -LoadBalancer $LOAD_BALANCER -Credentials $CREDENTIAL
+        $service= "{{VirtualServiceName}}"
+
+        Set-ManyServerStatusMaintenance -ServerNames Server04 -LoadBalancer $LOAD_BALANCER -VirtualServiceName $service -Token $token
+      
