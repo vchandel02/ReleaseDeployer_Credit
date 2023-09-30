@@ -8,6 +8,7 @@
   
   tasks:
     
+    ######## Stop Service ########
     - name: Stop Process
       win_shell: |
         $Processes = Get-WmiObject -Class Win32_Process -Filter "name='{{item}}'"
@@ -26,7 +27,21 @@
         }
       with_items: "{{ ProcessList.split(',') }}"
       register: killed_processes
+      when: OperationType = "stop"
 
     - name: Verify Processes
       debug: 
         var: killed_processes
+      when: OperationType = "stop"
+
+    ######## Start Process ########
+    - name: Start Process
+      win_shell: Start-ScheduledTask -TaskName "{{item}}"
+      with_items: "{{ ScheduledTaskList.split(',') }}"
+      register: start_processes
+      when: OperationType = "start"
+
+    - name: Verify Processes
+      debug: 
+        var: start_processes
+      when: OperationType = "start"
