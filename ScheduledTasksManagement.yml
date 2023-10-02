@@ -12,7 +12,9 @@
     
     - name: Start ScheduledTask
       win_shell: Start-ScheduledTask -TaskName "{{item}}"
-      with_items: "{{ ScheduledTaskList.split(',') }}"
+      loop: "{{ ScheduledTaskList }}"
+      loop_control:
+        loop_var: item
       register: start_scheduledtask
       when: OperationType == "start"
 
@@ -23,7 +25,9 @@
 
     - name: Disable ScheduledTask
       win_shell: Disable-ScheduledTask -TaskName "{{item}}"
-      with_items: "{{ ScheduledTaskList.split(',') }}"
+      loop: "{{ ScheduledTaskList }}"
+      loop_control:
+        loop_var: item
       register: disable_scheduledtask
       when: OperationType == "disable"
 
@@ -34,7 +38,9 @@
 
     - name: Enable ScheduledTask
       win_shell: Enable-ScheduledTask -TaskName "{{item}}"
-      with_items: "{{ ScheduledTaskList.split(',') }}"
+      loop: "{{ ScheduledTaskList }}"
+      loop_control:
+        loop_var: item
       register: enable_scheduledtask
       when: OperationType == "enable"
 
@@ -45,7 +51,9 @@
 
     - name: Change ScheduledTask User
       win_shell: Set-ScheduledTask -TaskName "{{item}}" -User {{UserName}} -Password {{Password}}
-      with_items: "{{ ScheduledTaskList.split(',') }}"
+      loop: "{{ ScheduledTaskList }}"
+      loop_control:
+        loop_var: item
       register: enable_scheduledtask
       when: OperationType == "changeuser"
 

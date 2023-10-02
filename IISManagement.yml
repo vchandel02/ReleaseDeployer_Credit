@@ -55,7 +55,9 @@
         $websiteName = "{{item}}"
         $appPoolName = (Get-Website -Name $websiteName).applicationPool
         Write-Output $appPoolName
-      with_items: "{{ WebsiteList.split(',') }}"
+      loop: "{{ WebsiteList }}"
+      loop_control:
+        loop_var: item
       register: app_pool_name
       when: OperationType == "stopapppool" or OperationType == "startapppool" or OperationType == "restartapppool"  or OperationType == "changeapppooluser"
 
@@ -74,7 +76,9 @@
       win_iis_webapppool:
         name: "{{ item.stdout | regex_replace('[\\r\\n\\t]+','')}}"
         state: stopped
-      with_items: "{{ app_pool_name.results }}"
+      loop: "{{ app_pool_name.results }}"
+      loop_control:
+        loop_var: item
       register: apppool_stop
       when: OperationType == "stopapppool"
 
@@ -84,6 +88,8 @@
         #var: apppool.results[0].info.attributes.state
         var: "{{item.info.attributes.state}}"
       loop: "{{apppool_stop.results}}"
+      loop_control:
+        loop_var: item
       when: OperationType == "stopapppool"
 
     ######## Start AppPool ########
@@ -91,7 +97,9 @@
       win_iis_webapppool:
         name: "{{ item.stdout | regex_replace('[\\r\\n\\t]+','')}}"
         state: started
-      with_items: "{{ app_pool_name.results }}"
+      loop: "{{ app_pool_name.results }}"
+      loop_control:
+        loop_var: item
       register: apppool_start
       when: OperationType == "startapppool"
 
@@ -101,6 +109,8 @@
         #var: apppool.results[0].info.attributes.state
         var: "{{item.info.attributes.state}}"
       loop: "{{apppool_start.results}}"
+      loop_control:
+        loop_var: item
       when: OperationType == "startapppool"
 
     ######## Restart AppPool ########
@@ -108,7 +118,9 @@
       win_iis_webapppool:
         name: "{{ item.stdout | regex_replace('[\\r\\n\\t]+','')}}"
         state: restarted
-      with_items: "{{ app_pool_name.results }}"
+      loop: "{{ app_pool_name.results }}"
+      loop_control:
+        loop_var: item
       register: apppool_restart
       when: OperationType == "restartapppool"
 
@@ -118,6 +130,8 @@
         #var: apppool.results[0].info.attributes.state
         var: "{{item.info.attributes.state}}"
       loop: "{{apppool_restart.results}}"
+      loop_control:
+        loop_var: item
       when: OperationType == "restartapppool"
 
     ######## Change AppPool User ########
@@ -130,7 +144,9 @@
           processModel.userName: '{{UserName}}'
           processModel.password: '{{Password}}'
           processModel.loadUserProfile: true
-      with_items: "{{ app_pool_name.results }}"
+      loop: "{{ app_pool_name.results }}"
+      loop_control:
+        loop_var: item
       register: apppooluserstatus
       when: OperationType == "changeapppooluser"
 
@@ -139,6 +155,8 @@
         #var: apppool.results[0].info.attributes.state
         var: "{{item.info.attributes.state}}"
       loop: "{{apppooluserstatus.results}}"
+      loop_control:
+        loop_var: item
       when: OperationType == "changeapppooluser"
 
     ######## Stop Website ########
@@ -146,7 +164,9 @@
       win_iis_website:
         name: "{{ item }}"
         state: stopped
-      with_items: "{{ WebsiteList.split(',') }}"
+      loop: "{{ WebsiteList }}"
+      loop_control:
+        loop_var: item
       register: stopwebsite
       when: OperationType == "stopwebsite"
 
@@ -160,7 +180,9 @@
       win_iis_website:
         name: "{{ item }}"
         state: started
-      with_items: "{{ WebsiteList.split(',') }}"
+      loop: "{{ WebsiteList }}"
+      loop_control:
+        loop_var: item
       register: startwebsite
       when: OperationType == "startwebsite"
 

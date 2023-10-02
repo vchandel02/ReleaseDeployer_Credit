@@ -25,23 +25,27 @@
                 write-host "The process {{item}} `($processid`) termination has some problems"
             }
         }
-      with_items: "{{ ProcessList.split(',') }}"
+      loop: "{{ ProcessList }}"
+      loop_control:
+        loop_var: item
       register: killed_processes
-      when: OperationType = "stop"
+      when: OperationType == "stop"
 
     - name: Verify Processes
       debug: 
         var: killed_processes
-      when: OperationType = "stop"
+      when: OperationType == "stop"
 
     ######## Start Process ########
     - name: Start Process
       win_shell: Start-ScheduledTask -TaskName "{{item}}"
-      with_items: "{{ ScheduledTaskList.split(',') }}"
+      loop: "{{ ScheduledTaskList }}"
+      loop_control:
+        loop_var: item
       register: start_processes
-      when: OperationType = "start"
+      when: OperationType == "start"
 
     - name: Verify Processes
       debug: 
         var: start_processes
-      when: OperationType = "start"
+      when: OperationType == "start"
