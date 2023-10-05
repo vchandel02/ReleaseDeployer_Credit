@@ -1,0 +1,21 @@
+---
+PackageSourceLocation: ~/ReleaseDeployer/Package
+PackageDestinationLocation: D:\Packages\
+PackageUnzipLocation: D:\Packages
+BackupLocation: D:\Backup
+
+modules:
+  DSLs:
+    Package_Path: "{{ PackageDestinationLocation }}\\Core\\DSLs"
+    Application_Path: D:\CreditProcessing\\DSLs
+  BatchScripts:
+    Package_Path: "{{ PackageDestinationLocation }}\\Core\\BatchScripts"
+    Application_Path: D:\CreditProcessing\\BatchScripts
+  PlatformCode:
+    Package_Path: "{{ PackageDestinationLocation }}\\PlatformCode\\CC_Runtime"
+    Application_Path: D:\CC_Runtime
+  corecard_services:
+    Package_Path: "{{ PackageDestinationLocation }}\\PlatformCode\\corecard_services"
+    Application_Path: D:\corecard_services
+
+    

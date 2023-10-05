@@ -8,13 +8,16 @@
   
   tasks:
     
-    ######## Deactivate VisualCron job ########
-    - name: Deactivate VisualCron job
+    ######## activate VisualCron job ########
+    - name: activate VisualCron job
       win_shell: |
         $Path = "C:\Program Files (x86)\VisualCron\VCCommand\VCCommand.exe"
-        $JobName = "{{JobName}}"
+        $JobName = "{{item}}"
         $Arg = "--action activatejob --connectionmode local --name $JobName --username admin"
         Start-Process -FilePath $Path -ArgumentList $Arg -Wait
+      loop: "{{ JobList }}"
+      loop_control:
+        loop_var: item
       register: result
       when: OperationType == "activate"
 
@@ -22,13 +25,16 @@
         var: result
       when: OperationType == "activate"
 
-    ######## Activate VisualCron job ########
-    - name: Activate VisualCron job
+    ######## Deactivate VisualCron job ########
+    - name: Deactivate VisualCron job
       win_shell: |
         $Path = "C:\Program Files (x86)\VisualCron\VCCommand\VCCommand.exe"
-        $JobName = "{{JobName}}"
+        $JobName = "{{item}}"
         $Arg = "--action deactivatejob --connectionmode local --name $JobName --username admin"
         Start-Process -FilePath $Path -ArgumentList $Arg -Wait
+      loop: "{{ JobList }}"
+      loop_control:
+        loop_var: item
       register: result
       when: OperationType == "deactivate"
 
@@ -40,9 +46,12 @@
     - name: Run VisualCron job
       win_shell: |
         $Path = "C:\Program Files (x86)\VisualCron\VCCommand\VCCommand.exe"
-        $JobName = "{{JobName}}"
+        $JobName = "{{item}}"
         $Arg = "--action runjob --connectionmode local --name $JobName --username admin"
         Start-Process -FilePath $Path -ArgumentList $Arg -Wait
+      loop: "{{ JobList }}"
+      loop_control:
+        loop_var: item
       register: result
       when: OperationType == "run"
 

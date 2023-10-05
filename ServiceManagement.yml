@@ -14,7 +14,9 @@
       win_service:
         name: "{{item}}"
         state: stopped
-      with_items: "{{ ServiceList.split(',') }}"
+      loop: "{{ ServiceList }}"
+      loop_control:
+        loop_var: item
       register: stop_service
       when: OperationType == "stopservice" or OperationType == "disableservice"  or OperationType == "changeserviceuser"
 
@@ -27,10 +29,12 @@
     - name: Change Service User
       win_service:
         name: "{{item}}"
-        username: '{{UserName}}'
-        password: '{{Password}}'
+        username: "{{UserType[User_Type].UserName}}"
+        password: "{{UserType[User_Type].Password}}"
         state: started
-      with_items: "{{ ServiceList.split(',') }}"
+      loop: "{{ ServiceList }}"
+      loop_control:
+        loop_var: item
       register: change_service_user
       when: OperationType == "changeserviceuser"
 
@@ -39,7 +43,9 @@
       win_service:
         name: "{{item}}"
         state: started
-      with_items: "{{ ServiceList.split(',') }}"
+      loop: "{{ ServiceList }}"
+      loop_control:
+        loop_var: item
       register: start_service
       when: OperationType == "startservice" or OperationType == "enableservice"
 
@@ -51,13 +57,17 @@
     ######## Set Windows Service to Manual Start ########
     - name: Set Windows Service to Manual Start
       win_shell: Set-Service -Name "{{item}}" -StartupType Manual
-      with_items: "{{ ServiceList.split(',') }}"
+      loop: "{{ ServiceList }}"
+      loop_control:
+        loop_var: item
       register: disable_service
       when: OperationType == "disableservice"
     
     ######## Set Windows Service to Automatic Start ########
     - name: Set Windows Service to Automatic Start
       win_shell: Set-Service -Name "{{item}}" -StartupType Automatic
-      with_items: "{{ ServiceList.split(',') }}"
+      loop: "{{ ServiceList }}"
+      loop_control:
+        loop_var: item
       register: enable_service
       when: OperationType == "enableservice"

@@ -1,0 +1,84 @@
+Package Management:
+    Download and Unzip Package:
+        ansible-playbook PackageManagement.yml -e "PackageFileName='PlatformCode_4.2.42.19_LAN.zip' MachineGroupName='PerfDevOps006'"
+    
+
+File Management:
+    Copy Modules:
+        ansible-playbook FileManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='copy' ModuleNames=['DSLs','BatchScripts']"
+    Backup Modules:
+        ansible-playbook FileManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='backup' ModuleNames=['DSLs','BatchScripts']"
+    Delete Files:
+        ansible-playbook FileManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='delete' DeleteList=['D:\TestFiles\File1.txt','D:\TestFiles\File2.txt']"
+    Delete folders:
+        ansible-playbook FileManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='delete' DeleteList=['D:\TestFiles','D:\TestFiles2']"
+
+IIS Management:
+    Stop IIS:
+        ansible-playbook IISManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='stopiis'"
+    Start IIS:
+        ansible-playbook IISManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='startiis'"
+    Restart IIS:
+        ansible-playbook IISManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='restartiis'"
+    Stop Application AppPool:
+        ansible-playbook IISManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='stopapppool' SiteType='application' SiteList=['WCF'] RootWebSiteName='WebServer'"
+    Stop WebSite AppPool:
+        ansible-playbook IISManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='stopapppool' SiteType='website' SiteList=['CoreWebApi']"
+    Start Application AppPool:
+        ansible-playbook IISManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='startapppool' SiteType='application' SiteList=['WCF'] RootWebSiteName='WebServer'"
+    Start WebSite AppPool:
+        ansible-playbook IISManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='startapppool' SiteType='website' SiteList=['CoreWebApi']"
+    Restart Application AppPool:
+        ansible-playbook IISManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='restartapppool' SiteType='application' SiteList=['WCF'] RootWebSiteName='WebServer'"
+    Restart WebSite AppPool:
+        ansible-playbook IISManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='restartapppool' SiteType='website' SiteList=['CoreWebApi']"
+    Change Application AppPool User:
+        ansible-playbook IISManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='changeapppooluser' SiteType='application' SiteList=['WCF'] RootWebSiteName='WebServer' User_Type='ConfigUser'"
+    Change WebSite AppPool User:
+        ansible-playbook IISManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='changeapppooluser' SiteType='website' SiteList=['WCF'] User_Type='ConfigUser'"
+    Stop WebSite:
+        ansible-playbook IISManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='stopwebsite' SiteList=['CoreWebApi']"
+    Start WebSite:
+        ansible-playbook IISManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='startwebsite' SiteList=['CoreWebApi']"
+
+    Process Management:
+        Stop Process:
+            ansible-playbook ProcessManagement.yml -e "MachineGroupName='PerfDevOps006' OperationType='stop' ProcessList=['mspaint.exe','notepad.exe','DbbAppServer.exe']"
+        
+    Scheduled Task Management:
+        Start Scheduled Task (With Filter):
+            ansible-playbook ScheduledTasksManagement.yml -e "MachineGroupName='PerfDevOps006' OperationType='start' ScheduledTaskList=['Start_*']"
+        Start Scheduled Task (Without Filter):
+            ansible-playbook ScheduledTasksManagement.yml -e "MachineGroupName='PerfDevOps006' OperationType='start' ScheduledTaskList=['Start_DbbAppServer_CoreIssue']"
+        Disable Scheduled Task (With Filter):
+            ansible-playbook ScheduledTasksManagement.yml -e "MachineGroupName='PerfDevOps006' OperationType='disable' ScheduledTaskList=['Start_*']"
+        Disable Scheduled Task (Without Filter):
+            ansible-playbook ScheduledTasksManagement.yml -e "MachineGroupName='PerfDevOps006' OperationType='disable' ScheduledTaskList=['Start_DbbAppServer_CoreIssue']"
+        Enable Scheduled Task (With Filter):
+            ansible-playbook ScheduledTasksManagement.yml -e "MachineGroupName='PerfDevOps006' OperationType='enable' ScheduledTaskList=['Start_*']"
+        Enable Scheduled Task (Without Filter):
+            ansible-playbook ScheduledTasksManagement.yml -e "MachineGroupName='PerfDevOps006' OperationType='enable' ScheduledTaskList=['Start_DbbAppServer_CoreIssue']"
+        Change Scheduled Task User(With Filter):
+            ansible-playbook ScheduledTasksManagement.yml -e "MachineGroupName='PerfDevOps006' OperationType='changeuser' ScheduledTaskList=['Start_*'] User_Type='NoDowntimeUser'"
+        Change Scheduled Task User(Without Filter):
+            ansible-playbook ScheduledTasksManagement.yml -e "MachineGroupName='PerfDevOps006' OperationType='changeuser' ScheduledTaskList=['Start_DbbAppServer_CoreIssue'] User_Type='NoDowntimeUser'"
+
+    Service Management:
+        Stop Service:
+             ansible-playbook ServiceManagement.yml -e "MachineGroupName='PerfDevOps006' OperationType='stopservice' ServiceList=['SNMP','dbbStartupService']"
+        Start Service:
+             ansible-playbook ServiceManagement.yml -e "MachineGroupName='PerfDevOps006' OperationType='startservice' ServiceList=['SNMP','dbbStartupService']"
+        Change Service User:
+            ansible-playbook ServiceManagement.yml -e "MachineGroupName='PerfDevOps006' OperationType='changeserviceuser' ServiceList=['SNMP','dbbStartupService'] User_Type='ConfigUser'"
+        Disable Service:
+            ansible-playbook ServiceManagement.yml -e "MachineGroupName='PerfDevOps006' OperationType='disableservice' ServiceList=['SNMP','dbbStartupService']"
+        Enable Service:
+            ansible-playbook ServiceManagement.yml -e "MachineGroupName='PerfDevOps006' OperationType='enableservice' ServiceList=['SNMP','dbbStartupService']"
+
+    VisualCron Management:
+        VisualCron Job Deactivate:
+            ansible-playbook VisualCronManagement.yml -e "MachineGroupName='vmpwin1' OperationType='deactivate' JobList=['Demo1','DemoJob']"
+        VisualCron Job Activate:
+            ansible-playbook VisualCronManagement.yml -e "MachineGroupName='vmpwin1' OperationType='activate' JobList=['Demo1','DemoJob']"
+        VisualCron Job Run:
+            ansible-playbook VisualCronManagement.yml -e "MachineGroupName='vmpwin1' OperationType='run' JobList=['Demo1','DemoJob']"

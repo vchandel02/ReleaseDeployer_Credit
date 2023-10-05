@@ -1,0 +1,17 @@
+---
+- name: Download Package
+  hosts: "{{ MachineGroupName }}"
+  become: yes
+  become_method: runas
+  become_user: System
+  gather_facts: yes
+  vars_files:
+    - CommonVars/FileManagement_Vars.yml
+
+  tasks:
+
+    - name: Download package {{PackageFileName}} from Ansible controller machine to servers
+      win_copy:
+        src: "{{ PackageSourceLocation }}/{{PackageFileName}}"
+        dest: "{{ PackageDestinationLocation }}"
+        remote_src: no

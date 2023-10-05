@@ -9,6 +9,8 @@
    - CommonVars/UserCredentials_Vars.yml
   
   tasks:
+
+    
     
     ######## Stop IIS ########
     - name: Stop IIS
@@ -49,13 +51,25 @@
         var: restart_iis
       when: OperationType == "restartiis"
 
-    ######## Get IIS AppPool Name ########
+    ######## Get IIS WebSite AppPool Name ########
     - name: Get IIS AppPool Name for all the given websites
       win_shell: |
-        $websiteName = "{{item}}"
-        $appPoolName = (Get-Website -Name $websiteName).applicationPool
+        $siteType = "{{SiteType}}"
+        if($siteType -eq "application")
+        {
+          $Application = "{{item}}"
+          $WebSite = "{{RootWebSiteName | default('') }}"
+          (Get-WebApplication -Name $Application | Where ItemXPath -Match $WebSite).applicationPool
+        }
+        elseif($siteType -eq "website")
+        {
+          $websiteName = "{{item}}"
+          $appPoolName = (Get-Website -Name $websiteName).applicationPool
+        }
         Write-Output $appPoolName
-      with_items: "{{ WebsiteList.split(',') }}"
+      loop: "{{ SiteList }}"
+      loop_control:
+        loop_var: item
       register: app_pool_name
       when: OperationType == "stopapppool" or OperationType == "startapppool" or OperationType == "restartapppool"  or OperationType == "changeapppooluser"
 
@@ -64,17 +78,15 @@
         var: app_pool_name
       when: OperationType == "stopapppool" or OperationType == "startapppool" or OperationType == "restartapppool" or OperationType == "changeapppooluser"
 
-    #- name: Display AppPool Name
-    #  debug: msg="Website Name={{item.item}}, AppPool Name={{item.stdout | regex_replace('[\\r\\n\\t]+','') }}"
-    #  with_items: "{{ app_pool_result.results }}"
-    #  when: OperationType == "stopapppool"
 
     ######## Stop AppPool ########
     - name: Stop IIS AppPool
       win_iis_webapppool:
         name: "{{ item.stdout | regex_replace('[\\r\\n\\t]+','')}}"
         state: stopped
-      with_items: "{{ app_pool_name.results }}"
+      loop: "{{ app_pool_name.results }}"
+      loop_control:
+        loop_var: item
       register: apppool_stop
       when: OperationType == "stopapppool"
 
@@ -84,6 +96,8 @@
         #var: apppool.results[0].info.attributes.state
         var: "{{item.info.attributes.state}}"
       loop: "{{apppool_stop.results}}"
+      loop_control:
+        loop_var: item
       when: OperationType == "stopapppool"
 
     ######## Start AppPool ########
@@ -91,7 +105,9 @@
       win_iis_webapppool:
         name: "{{ item.stdout | regex_replace('[\\r\\n\\t]+','')}}"
         state: started
-      with_items: "{{ app_pool_name.results }}"
+      loop: "{{ app_pool_name.results }}"
+      loop_control:
+        loop_var: item
       register: apppool_start
       when: OperationType == "startapppool"
 
@@ -101,6 +117,8 @@
         #var: apppool.results[0].info.attributes.state
         var: "{{item.info.attributes.state}}"
       loop: "{{apppool_start.results}}"
+      loop_control:
+        loop_var: item
       when: OperationType == "startapppool"
 
     ######## Restart AppPool ########
@@ -108,7 +126,9 @@
       win_iis_webapppool:
         name: "{{ item.stdout | regex_replace('[\\r\\n\\t]+','')}}"
         state: restarted
-      with_items: "{{ app_pool_name.results }}"
+      loop: "{{ app_pool_name.results }}"
+      loop_control:
+        loop_var: item
       register: apppool_restart
       when: OperationType == "restartapppool"
 
@@ -118,6 +138,8 @@
         #var: apppool.results[0].info.attributes.state
         var: "{{item.info.attributes.state}}"
       loop: "{{apppool_restart.results}}"
+      loop_control:
+        loop_var: item
       when: OperationType == "restartapppool"
 
     ######## Change AppPool User ########
@@ -127,10 +149,12 @@
         state: started
         attributes:
           processModel.identityType: SpecificUser
-          processModel.userName: '{{UserName}}'
-          processModel.password: '{{Password}}'
+          processModel.userName: "{{UserType[User_Type].UserName}}"
+          processModel.password: "{{UserType[User_Type].Password}}"
           processModel.loadUserProfile: true
-      with_items: "{{ app_pool_name.results }}"
+      loop: "{{ app_pool_name.results }}"
+      loop_control:
+        loop_var: item
       register: apppooluserstatus
       when: OperationType == "changeapppooluser"
 
@@ -139,6 +163,8 @@
         #var: apppool.results[0].info.attributes.state
         var: "{{item.info.attributes.state}}"
       loop: "{{apppooluserstatus.results}}"
+      loop_control:
+        loop_var: item
       when: OperationType == "changeapppooluser"
 
     ######## Stop Website ########
@@ -146,7 +172,9 @@
       win_iis_website:
         name: "{{ item }}"
         state: stopped
-      with_items: "{{ WebsiteList.split(',') }}"
+      loop: "{{ SiteList }}"
+      loop_control:
+        loop_var: item
       register: stopwebsite
       when: OperationType == "stopwebsite"
 
@@ -155,12 +183,31 @@
         var: stopwebsite
       when: OperationType == "stopwebsite"
 
+    ######## Stop Application ########
+    - name: Stop Application
+      win_iis_webapplication:
+        name: "{{ item }}"
+        site: "{{ RootWebSiteName }}" 
+        state: stopped
+      loop: "{{ ApplicationList }}"
+      loop_control:
+        loop_var: item
+      register: stopapplication
+      when: OperationType == "stopapplication"
+
+    - name: Verify Application status
+      debug:
+        var: stopapplication
+      when: OperationType == "stopapplication"
+
     ######## Start Website ########
     - name: Start Website
       win_iis_website:
         name: "{{ item }}"
         state: started
-      with_items: "{{ WebsiteList.split(',') }}"
+      loop: "{{ SiteList }}"
+      loop_control:
+        loop_var: item
       register: startwebsite
       when: OperationType == "startwebsite"
 
@@ -168,3 +215,20 @@
       debug:
         var: startwebsite
       when: OperationType == "startwebsite"
+
+    ######## Start Application ########
+    - name: Start Application
+      win_iis_webapplication:
+        name: "{{ item }}"
+        site: "{{ RootWebSiteName }}" 
+        state: started
+      loop: "{{ ApplicationList }}"
+      loop_control:
+        loop_var: item
+      register: application_result
+      when: OperationType == "startapplication"
+
+    - name: Check the status of the IIS application
+      debug:
+        var: application_result
+      when: OperationType == "startapplication"
