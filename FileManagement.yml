@@ -21,7 +21,7 @@
         backupFolder: "{{ BackupLocation }}"
       loop: "{{ ModuleNames | default(['DSLs']) }}"
       register: module_vars
-      when: OperationType == "copy" or OperationType == "delete"
+      when: OperationType == "copy" or OperationType == "delete" or OperationType == "backup"
     
     - name: Copy Modules
       win_shell: |
@@ -73,35 +73,11 @@
         Write-Host "Application Folder: {{ item.ansible_facts.applicationFolder }}"
         Write-Host "Backup Folder: {{ item.ansible_facts.backupFolder }}"
 
-        $moduleName = "{{ item.ansible_facts.ModuleName }}"
-        $packagePath = "{{ item.ansible_facts.packagePath }}"
         $applicationFolder = "{{ item.ansible_facts.applicationFolder }}"
-        $packageFiles = Get-ChildItem -Path $packagePath -File -Recurse
-        foreach ($file in $packageFiles) 
-        {
-          $fileFullName = "$($file.FullName)"
-          $relativePath = $fileFullName -replace "$packagePath".Replace('\', '\\'), ""
-          Write-Host "Relative path: " $relativePath
-          $applicationFolderPath = Join-Path -Path $applicationFolder -ChildPath $relativePath
-          $backupSubFolder = "{{ item.ansible_facts.ModuleName }}_{{ ansible_date_time.iso8601_basic_short}}"
-          if (Test-Path -Path $applicationFolderPath)
-          {
-              $backupPath = Join-Path -Path {{ item.ansible_facts.backupFolder }} -ChildPath $backupSubFolder
-              Write-Host "backup path: " $backupPath
-              $backupFilePath = Join-Path -Path $backupPath -ChildPath $relativePath
-              $BackupPath = [System.IO.Path]::GetDirectoryName($backupFilePath)
-              if (-not (Test-Path -Path $BackupPath))
-              {
-                New-Item -Path $BackupPath -ItemType Directory | Out-Null
-              }
-              Copy-Item -Path $applicationFolderPath -Destination $backupFilePath -Force
-              Write-Host "Backed up $($file.FullName) to $($backupFilePath)"
-          }
-          else 
-          {
-            Write-Host "File $($file.FullName) does not exist in the destination folder."
-          }
-        }		
+        $backupfolder = "{{ BackupLocation }}"
+        $backupSubFolder = "{{ item.ansible_facts.ModuleName }}_{{ ansible_date_time.iso8601_basic_short}}"
+        $backupFullPath = Join-Path -Path $backupfolder -ChildPath $backupSubFolder
+        Copy-Item -Path $applicationFolder -Destination $backupFullPath -Recurse
       loop: "{{ module_vars.results }}"
       loop_control:
         loop_var: item
