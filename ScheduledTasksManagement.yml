@@ -11,7 +11,9 @@
   tasks:
     
     - name: Start ScheduledTask
-      win_shell: Start-ScheduledTask -TaskName "{{item}}"
+      win_shell: |
+        $tasks = Get-ScheduledTask | Where-Object { $_.TaskName -like "{{item}}" }
+        $tasks | ForEach-Object { Start-ScheduledTask -TaskName $_.TaskName }
       loop: "{{ ScheduledTaskList }}"
       loop_control:
         loop_var: item
@@ -24,7 +26,9 @@
       when: OperationType == "start"
 
     - name: Disable ScheduledTask
-      win_shell: Disable-ScheduledTask -TaskName "{{item}}"
+      win_shell: |
+        $tasks = Get-ScheduledTask | Where-Object { $_.TaskName -like "{{item}}" }
+        $tasks | ForEach-Object { Disable-ScheduledTask -TaskName $_.TaskName }
       loop: "{{ ScheduledTaskList }}"
       loop_control:
         loop_var: item
@@ -37,7 +41,9 @@
       when: OperationType == "disable"
 
     - name: Enable ScheduledTask
-      win_shell: Enable-ScheduledTask -TaskName "{{item}}"
+      win_shell: |
+        $tasks = Get-ScheduledTask | Where-Object { $_.TaskName -like "{{item}}" }
+        $tasks | ForEach-Object { Enable-ScheduledTask -TaskName $_.TaskName }
       loop: "{{ ScheduledTaskList }}"
       loop_control:
         loop_var: item
@@ -50,7 +56,11 @@
       when: OperationType == "enable"
 
     - name: Change ScheduledTask User
-      win_shell: Set-ScheduledTask -TaskName "{{item}}" -User {{UserName}} -Password {{Password}}
+      win_shell: |
+        $username = "{{ UserType[User_Type].UserName }}"
+        $password = "{{ UserType[User_Type].Password }}"
+        $tasks = Get-ScheduledTask | Where-Object { $_.TaskName -like "{{item}}" }
+        $tasks | ForEach-Object { Set-ScheduledTask -TaskName $_.TaskName -User $username -Password $password }
       loop: "{{ ScheduledTaskList }}"
       loop_control:
         loop_var: item

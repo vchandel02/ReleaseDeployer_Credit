@@ -29,8 +29,8 @@
     - name: Change Service User
       win_service:
         name: "{{item}}"
-        username: '{{UserName}}'
-        password: '{{Password}}'
+        username: "{{UserType[User_Type].UserName}}"
+        password: "{{UserType[User_Type].Password}}"
         state: started
       loop: "{{ ServiceList }}"
       loop_control:

@@ -1,6 +1,7 @@
 ---
 PackageSourceLocation: ~/ReleaseDeployer/Package
-PackageDestinationLocation: D:\Packages
+PackageDestinationLocation: D:\Packages\
+PackageUnzipLocation: D:\Packages
 BackupLocation: D:\Backup
 
 modules:

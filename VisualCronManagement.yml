@@ -9,7 +9,7 @@
   tasks:
     
     ######## activate VisualCron job ########
-    - name: Deactivate VisualCron job
+    - name: activate VisualCron job
       win_shell: |
         $Path = "C:\Program Files (x86)\VisualCron\VCCommand\VCCommand.exe"
         $JobName = "{{item}}"
@@ -26,7 +26,7 @@
       when: OperationType == "activate"
 
     ######## Deactivate VisualCron job ########
-    - name: Activate VisualCron job
+    - name: Deactivate VisualCron job
       win_shell: |
         $Path = "C:\Program Files (x86)\VisualCron\VCCommand\VCCommand.exe"
         $JobName = "{{item}}"
