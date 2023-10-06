@@ -11,7 +11,7 @@
     ######## Stop Process ########
     - name: Stop Process
       win_shell: |
-        $Processes = Get-WmiObject -Class Win32_Process -Filter "name='{{item}}'"
+        $Processes = Get-WmiObject -Class Win32_Process -Filter "name like '{{item}}'"
         foreach ($process in $processes)
         {
             $returnval = $process.terminate()
@@ -35,17 +35,3 @@
       debug: 
         var: killed_processes
       when: OperationType == "stop"
-
-    ######## Start Process ########
-    #- name: Start Process
-    #  win_shell: Start-ScheduledTask -TaskName "{{item}}"
-    #  loop: "{{ ScheduledTaskList }}"
-    #  loop_control:
-    #    loop_var: item
-    #  register: start_processes
-    #  when: OperationType == "start"
-
-    #- name: Verify Processes
-    #  debug: 
-    #    var: start_processes
-    #  when: OperationType == "start"

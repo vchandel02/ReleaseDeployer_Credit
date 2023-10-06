@@ -5,13 +5,15 @@ Package Management:
 
 File Management:
     Copy Modules:
-        ansible-playbook FileManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='copy' ModuleNames=['DSLs','BatchScripts']"
+        ansible-playbook FileManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='copy' ModuleNames=['DSLs'] PackageName='Core'" 
     Backup Modules:
         ansible-playbook FileManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='backup' ModuleNames=['DSLs','BatchScripts']"
     Delete Files:
         ansible-playbook FileManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='delete' DeleteList=['D:\TestFiles\File1.txt','D:\TestFiles\File2.txt']"
     Delete folders:
         ansible-playbook FileManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='delete' DeleteList=['D:\TestFiles','D:\TestFiles2']"
+    Delete File Content:
+        ansible-playbook FileManagement.yml -e "MachineGroupName='PerfDevOps002' OperationType='deletefoldercontent' FolderPath='D:\Backup'"
 
 IIS Management:
     Stop IIS:
@@ -44,6 +46,7 @@ IIS Management:
     Process Management:
         Stop Process:
             ansible-playbook ProcessManagement.yml -e "MachineGroupName='PerfDevOps006' OperationType='stop' ProcessList=['mspaint.exe','notepad.exe','DbbAppServer.exe']"
+            ansible-playbook ProcessManagement.yml -e "MachineGroupName='PerfDevOps006' OperationType='stop' ProcessList=['mspaint.exe','DbbAppServer_%']"
         
     Scheduled Task Management:
         Start Scheduled Task (With Filter):
