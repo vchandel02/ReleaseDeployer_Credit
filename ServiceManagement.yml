@@ -47,16 +47,16 @@
       loop_control:
         loop_var: item
       register: start_service
-      when: OperationType == "startservice" or OperationType == "enableservice"
+      when: OperationType == "startservice"
 
     - name: Verify Service
       debug: 
         var: start_service
       when: OperationType == "startservice"
 
-    ######## Set Windows Service to Manual Start ########
-    - name: Set Windows Service to Manual Start
-      win_shell: Set-Service -Name "{{item}}" -StartupType Manual
+    ######## Disable Windows Service ########
+    - name: Disable Windows Service
+      win_shell: Set-Service -Name "{{item}}" -StartupType Disabled
       loop: "{{ ServiceList }}"
       loop_control:
         loop_var: item
